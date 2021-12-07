@@ -7,7 +7,7 @@ const PORT = 8080;
 app.set("view engine", "ejs");
 
 function generateRandomString() {
-  Math.random().toString(36).slice(7);
+ return  Math.random().toString(36).slice(7);
 }
 
 const urlDatabase ={
@@ -32,10 +32,16 @@ app.get("/urls/new", (req,res) => {
   res.render("urls_new");
 });
 
+//add new url
 app.post("/urls", (req, res) =>{
-  console.log(req.body);
-  res.send("ok");
-})
+  const shortURL = generateRandomString();
+  const longURL = req.body.longURL;
+  urlDatabase[shortURL] = longURL ;
+  
+   res.redirect(`/urls/${shortURL}`);
+ 
+});
+
 
 app.get("/urls",(req,res) =>{
   const templateVars ={urls : urlDatabase};
@@ -43,9 +49,30 @@ app.get("/urls",(req,res) =>{
 });
 
 
+
+app.get("/u/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  if(Object.keys(urlDatabase).includes(shortURL)){
+   const longURL= urlDatabase[shortURL];
+   res.redirect(longURL);
+  }
+  else 
+  {
+    res.render('404');
+  }
+});
+
+
+
+
 app.get("/urls/:shortURL",(req,res) => {
-  const templateVars = { shortURL: (req.params.shortURL).substring(1), longURL : urlDatabase[(req.params.shortURL).substring(1)]};
+  if(Object.keys(urlDatabase).includes(shortURL)){
+  const templateVars = { shortURL: req.params.shortURL, longURL : urlDatabase[req.params.shortURL]};
   res.render("urls_show", templateVars);
+  }  else 
+  {
+    res.render('404');
+  }
 });
 
 
