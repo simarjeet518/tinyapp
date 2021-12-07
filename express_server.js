@@ -66,8 +66,9 @@ app.get("/u/:shortURL", (req, res) => {
 
 
 app.get("/urls/:shortURL",(req,res) => {
+  const shortURL = req.params.shortURL;
   if(Object.keys(urlDatabase).includes(shortURL)){
-  const templateVars = { shortURL: req.params.shortURL, longURL : urlDatabase[req.params.shortURL]};
+  const templateVars = { shortURL: shortURL, longURL : urlDatabase[shortURL]};
   res.render("urls_show", templateVars);
   }  else 
   {
