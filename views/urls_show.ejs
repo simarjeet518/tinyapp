@@ -15,12 +15,13 @@
         <p class="card-text">Short URL: <a href="<%= `/u/${shortURL}` %>"><%= shortURL %></a></p>
       </div>
     <div class="card-footer text-muted">
-      <h3> <b>Edit</b></h3>
+      <h3><% if(user !== undefined) {%> <b>Edit</b></h3>
       <form method="POST" action="<%= `/urls/${shortURL}/edit`%>">
         <label for="longURL" style="font-weight: bold;"> New URL</label>
          <input " type="text" name="longURL" value="<%= longURL %>" style="width: 300px; height:40px; border: 20px,solid;margin: 1em">
         <button type ="submit" class="btn btn-primary">Submit</button>
         </form>
+        <%} %>
     </div>
   </div>
   <!-- Bootstrap JS -->

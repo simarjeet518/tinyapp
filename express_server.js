@@ -21,6 +21,11 @@ const users = {
     id: '65478',
     email: 'simarjeet518@gmail.com',
     password: 'abc123'
+  },
+  '12wdrf' : {
+    id: '12wdrf',
+    email: 'abc@yahoo.com',
+    password: '123456' 
   }
 };
 
@@ -128,8 +133,13 @@ app.post("/urls/:shortURL/edit",(req,res) => {
 // display page where new longURL added
 app.get("/urls/new", (req,res) => {
   const id = req.cookies["userid"];
+  if(id !== undefined)
+  {
   const template = { user: users[id]};
   res.render("urls_new",template);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 //add new url
