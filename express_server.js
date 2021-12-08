@@ -35,13 +35,14 @@ app.get("/register",(req,res) => {
 
 //post register template data
 app.post("/register",(req,res) => {
+  console.log("register");
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
   const emails=[];
   for(let keys in users){
     emails.push(users[keys]['email']);    //holds existing emails in users data object
-  }
+  };
    
 
   if(email !=="" && password !== "" &&  !(emails.includes(email)))  
@@ -51,12 +52,15 @@ app.post("/register",(req,res) => {
   const userObject = { id: id , email: email, password: password};
   users[id] = userObject;
 
-  res.cookie('userid',id);  
+  res.cookie('userid',id); 
   res.redirect("/urls");
 }
 else{
-  res.write("You should enter valid email and password to proceed");
-  res.end();
+  //res.send()
+ 
+  res.status(400).redirect("/register");
+  
+  
 }
 
 });
@@ -68,11 +72,16 @@ app.post("/logout",(req,res) => {
 
 });
 
+//display login
+app.get("/login",(req,res) => {
+   res.render("login");
+});
+
 //Add login
 app.post("/login",(req,res) => {
-  const username = req.body.username;
+ // const username = req.body.username;
  
-  res.cookie('username',username);
+ // res.cookie('username',username);
   res.redirect("/urls");
 
 });
@@ -99,7 +108,7 @@ app.post("/urls/:shortURL/edit",(req,res) => {
 
 // display page where new longURL added
 app.get("/urls/new", (req,res) => {
-  const id = req.cookies["useid"];
+  const id = req.cookies["userid"];
   const template ={ user: users[id]};
   res.render("urls_new",template);
 });
@@ -119,8 +128,9 @@ app.post("/urls", (req, res) =>{
 //display home page
 app.get("/urls",(req,res) =>{
   const id = req.cookies["userid"]
+  console.log(id);
   const user = users[id];
- 
+ console.log("here"+user);
   const templateVars ={urls : urlDatabase,user: user};
   res.render("urls_index",templateVars);
 });
