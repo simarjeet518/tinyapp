@@ -14,32 +14,28 @@
 
 <body>
   <%- include('partials/header1') %>
-  <div> 
-    <form method="POST" action="/register">
-      <table style="border:1px ;margin-right:auto;">
+    <div>
+      <form method="POST" action="/register" style="margin-left:20px">
 
-        <tr>
-         <td>  <label for="email"><b>Email</b></label></td>
-            <td><input " type="email" name="email" placeholder="email"
-              style="width: 300px; height:40px; border-radius: 5px;margin: 1em">
-          </td>
-        </tr> <tr>
-          <td>
-            <label for="password"><b>Password</b></label></td>
-         <td>  <input " type="password" name="password" placeholder="password" style="width: 300px;  height:40px; border-radius: 5px;margin: 1em">
+        <h2 style="font-weight: 200; font-family:Arial, Helvetica, sans-serif; margin-bottom: 15px;margin-left:40px">
+          Create Account</h2>
+        <div>
+          <label for="email" style="margin-bottom: 0px;"><b>Email address <address></address></b></label><br>
+          <input " type=" email" name="email" placeholder="Enter email"
+            style="width: 300px; height:40px; border-radius: 5px;margin-top: 0px;"><br>
+        </div>
+        <div>
+          <label for="password" style="margin-top: 15px;"><b>Password</b></label><br />
+          <input " type=" password" name="password" placeholder="password"
+            style="width: 300px;  height:40px; border-radius: 5px;margin-top: 6px;"><br><br />
 
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2" style="text-align: center" > 
-            <button class="btn btn-primary" type="submit" class="btn ">Register</button>
-          </td>
-        </tr>
+        </div>
+        <div>
+          <button class="btn btn-primary" type="submit" class="btn " style="margin-left:80px">Register</button>
+        </div>
 
-      </table>
-
-    </form>
-  </div>
+      </form>
+    </div>
 </body>
 
 </html>
