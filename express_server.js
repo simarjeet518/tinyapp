@@ -27,6 +27,19 @@ const urlDatabase ={
   "9sm5xK": "http://www.google.com"
 };
 
+//helper function to match email
+const verifyEmail = (email) => {
+  let result ="";
+  for(let keys in users){
+    if(email === users[keys]['email']) {
+      result = keys;
+    } 
+  };
+  return result;
+  
+}
+
+
 // display register template
 app.get("/register",(req,res) => {
   res.render("register");
@@ -39,27 +52,24 @@ app.post("/register",(req,res) => {
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
-  const emails=[];
-  for(let keys in users){
-    emails.push(users[keys]['email']);    //holds existing emails in users data object
-  };
-   
-
-  if(email !=="" && password !== "" &&  !(emails.includes(email)))  
-  //if email and passowrd is not empty and email does not match with existing email
-{ 
-  
+ 
+  if(email !=="" && password !== "" )  { 
+  if(verifyEmail(email)===""){
   const userObject = { id: id , email: email, password: password};
   users[id] = userObject;
 
   res.cookie('userid',id); 
   res.redirect("/urls");
+} else {
+  res.write("Email user already register try with login");
+  //res.redirect("/register");
+  res.end();
 }
-else{
-  //res.send()
+} else {
  
-  res.status(400).redirect("/register");
-  
+  res.status(400);
+  res.write("email and password should not be empty");
+  res.end();
   
 }
 
@@ -79,10 +89,21 @@ app.get("/login",(req,res) => {
 
 //Add login
 app.post("/login",(req,res) => {
- // const username = req.body.username;
- 
- // res.cookie('username',username);
-  res.redirect("/urls");
+  const loginEmail = req.body.email;
+  const loginpassword = req.body.password;
+  const userid = verifyEmail(loginEmail);
+
+  if(userid !== "" && loginpassword === users[userid]['password']){
+    res.cookie('userid',userid);
+    res.redirect("/urls");  
+  } else
+  {
+    res.status(403);
+    res.write("email id and password does not match ");
+    res.end();
+  }
+
+  
 
 });
 
