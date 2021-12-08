@@ -12,7 +12,7 @@
       </div>
     </div>
     <div>
-    <%if(user !== undefined){ %>
+    <%if( user !== undefined ){ %>
       <form method="POST" action="/logout">
         <span>Logged in with <%= user['email'] %>! &nbsp; &nbsp; </span>
         <button class="btn btn-outline-dark" type="submit" class="btn ">Logout</button>
