@@ -39,8 +39,18 @@ const urlDatabase = {
     userID: "12wdrf"
 }
 };
+//helper function to remove cookies not in my database
+const badCookie =(req,res) => {
 
-// this is used in get request to set proper header template of login and register ,when no cookie exists
+  const userIds =Object.keys(users);
+  const cookiee = req.cookies['userid'];
+  console.log(userIds);
+  console.log(cookiee+"cookiee");
+  if(!userIds.includes(cookiee)){
+   // console.log("here");
+    res.clearCookie('userid');
+  }
+}
 
 // helper function to get url under logged userid
 const filteredUrlDatabase = (urlDatabase,userid) => {
@@ -126,6 +136,7 @@ app.post("/login",(req,res) => {
 
 // Delete URL
 app.post("/urls/:shortURL/delete",(req,res) => {
+  badCookie(req,res);
   const userid = req.cookies["userid"];
   if(userid) {
   const shortURL = req.params.shortURL;
@@ -138,6 +149,7 @@ app.post("/urls/:shortURL/delete",(req,res) => {
 
 //Edit URL
 app.post("/urls/:shortURL/edit",(req,res) => {
+  badCookie(req,res);
   const userid = req.cookies["userid"];
   if(userid) {
   const shortURL = req.params.shortURL;
@@ -155,6 +167,7 @@ app.post("/urls/:shortURL/edit",(req,res) => {
 
 // display page where new longURL added
 app.get("/urls/new", (req,res) => {
+  badCookie(req,res);
   const id = req.cookies["userid"];
   if(id !== undefined)
   {
@@ -168,6 +181,7 @@ app.get("/urls/new", (req,res) => {
 
 //add new url
 app.post("/urls", (req, res) =>{
+  badCookie(req,res);
   const userid =req.cookies.userid;
   if(userid!== undefined){
   const shortURL = generateRandomString();
@@ -190,6 +204,7 @@ app.post("/urls", (req, res) =>{
 
 //display home page
 app.get("/urls",(req,res) =>{
+   badCookie(req,res);
    const userid = req.cookies['userid'];
    const user = users[userid];
    if(userid){
@@ -207,6 +222,7 @@ app.get("/urls",(req,res) =>{
 
 // display longURL from shortURL
 app.get("/u/:shortURL", (req, res) => {
+  badCookie(req,res);
   const shortURL = req.params.shortURL;
   if (Object.keys(urlDatabase).includes(shortURL)) {
     const longURL = urlDatabase[shortURL].longURL;
@@ -221,6 +237,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Read specified ShortURL alomg with its long URL
 app.get("/urls/:shortURL",(req,res) => {
+  badCookie(req,res);
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
   const user = users[req.cookies['userid']];
@@ -254,4 +271,5 @@ app.listen(PORT ,() => {
   ;
   
 });
+
 
