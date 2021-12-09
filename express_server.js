@@ -1,6 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+const cookieSession = require('cookie-session');
 const morgan = require('morgan');
 const bcrypt = require('bcryptjs');
 const app = express();
@@ -9,7 +9,10 @@ const PORT = 8080;
 // middleware
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extented: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}));
 app.set("view engine", "ejs");
 
 //create 6 characters alphaNumaric code for shortURL
@@ -45,9 +48,9 @@ const urlDatabase = {
 //helper function to remove cookies not in my database
 const badCookie = (req,res) => {
   const userIds = Object.keys(users);
-  const cookiee = req.cookies['userid'];
+  const cookiee = req.session.userid;
   if (!userIds.includes(cookiee)) {
-    res.clearCookie('userid');
+    req.session.userid = "";
   }
 };
 
@@ -98,13 +101,13 @@ app.post("/register",(req,res) => {
   const hashedPassword = bcrypt.hashSync(password,10);
   const userObject = { id: id , email: email, password: hashedPassword};
   users[id] = userObject;
-  res.cookie('userid',id);
+  req.session.userid = id;
   res.redirect("/urls");
 });
 
 //logout display
 app.post("/logout",(req,res) => {
-  res.clearCookie('userid');
+  req.session.userid = "";
   res.redirect("/login");
 
 });
@@ -122,34 +125,33 @@ app.post("/login",(req,res) => {
   const userid = verifyEmail(loginEmail);
  
   if (userid !== "" && bcrypt.compareSync(loginpassword,users[userid]['password'])) {
-    res.cookie('userid',userid);
+    req.session.userid = userid;
     res.redirect("/urls");
   } else {
     res.status(403).send("email id and password does not match ");
     return;
   }
 
-  
-
 });
 
 // Delete URL
 app.post("/urls/:shortURL/delete",(req,res) => {
   badCookie(req,res);
-  const userid = req.cookies["userid"];
+  const userid = req.session.userid;
   if (userid) {
     const shortURL = req.params.shortURL;
     delete urlDatabase[shortURL];
 
     res.redirect("/urls");
+  } else {
+    res.status(401).send("permission denied");
   }
-  res.status(401).send("permission denied");
 });
 
 //Edit URL
 app.post("/urls/:shortURL/edit",(req,res) => {
   badCookie(req,res);
-  const userid = req.cookies["userid"];
+  const userid = req.session.userid;
   if (userid) {
     const shortURL = req.params.shortURL;
   
@@ -166,8 +168,8 @@ app.post("/urls/:shortURL/edit",(req,res) => {
 // display page where new longURL added
 app.get("/urls/new", (req,res) => {
   badCookie(req,res);
-  const id = req.cookies["userid"];
-  if (id !== undefined) {
+  const id = req.session.userid;
+  if (id !== "") {
     const template = { user: users[id]};
     res.render("urls_new",template);
   } else {
@@ -181,7 +183,7 @@ app.get("/urls/new", (req,res) => {
 //add new url
 app.post("/urls", (req, res) =>{
   badCookie(req,res);
-  const userid = req.cookies.userid;
+  const userid = req.session.userid;
   if (userid !== undefined) {
     const shortURL = generateRandomString();
     const longURL = req.body.longURL;
@@ -203,7 +205,7 @@ app.post("/urls", (req, res) =>{
 //display home page
 app.get("/urls",(req,res) =>{
   badCookie(req,res);
-  const userid = req.cookies['userid'];
+  const userid = req.session.userid;
   const user = users[userid];
   if (userid) {
    
@@ -237,7 +239,7 @@ app.get("/urls/:shortURL",(req,res) => {
   badCookie(req,res);
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
-  const user = users[req.cookies['userid']];
+  const user = users[req.session.userid];
 
   if (Object.keys(urlDatabase).includes(shortURL)) {
     const templateVars = { shortURL: shortURL, longURL :longURL ,user: user};
