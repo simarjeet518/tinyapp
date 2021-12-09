@@ -9,7 +9,11 @@
   <title>TinyApp</title>
 </head>
 <body>
+ 
   <%- include('partials/_header') %> 
+  <% if(!urls) {%>
+    <h3> Error: Permission denied you should login or register first to see  URLs </h3>
+      <% } else {%>
   <main style="margin: 1em;">
     <h3>My URLs</h3>
     <table class="table">
@@ -22,6 +26,7 @@
         </tr>
       </thead>
       <tbody>
+        
         <% for(let url in urls) { %>
           <tr>
             <td><%= url %></td>
@@ -39,7 +44,7 @@
             </td>
           </tr>
         <% } %>
-        
+        <%} %>
       </tbody>
     </table>
   </main>

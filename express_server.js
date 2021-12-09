@@ -30,14 +30,28 @@ const users = {
 };
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+     userID: "65478"
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "12wdrf"
+}
 };
 
 // this is used in get request to set proper header template of login and register ,when no cookie exists
-const temp = {
-  user : undefined
-};
+
+// helper function to get url under logged userid
+const filteredUrlDatabase = (urlDatabase,userid) => {
+  let filteredObject ={};
+  for(let shorturl in urlDatabase){
+    if(urlDatabase[shorturl].userID === userid){
+      filteredObject[shorturl]= urlDatabase[shorturl].longURL;
+    }
+  }
+  return filteredObject;
+ }
 
 //helper function to match email
 const verifyEmail = (email) => {
@@ -54,7 +68,7 @@ const verifyEmail = (email) => {
 
 // display register template
 app.get("/register",(req,res) => {
-  res.render("register",temp);
+  res.render("register",{user:null});
 });
 
 
@@ -75,21 +89,21 @@ app.post("/register",(req,res) => {
   }
   const userObject = { id: id , email: email, password: password};
   users[id] = userObject;
-  
-  res.redirect("/login");
+  res.cookie('userid',id);
+  res.redirect("/urls");
 });
 
 //logout display
 app.post("/logout",(req,res) => {
   res.clearCookie('userid');
-  res.redirect("/urls");
+  res.redirect("/login");
 
 });
 
 //display login
 app.get("/login",(req,res) => {
 
-  res.render("login",temp);
+  res.render("login",{user:null});
 });
 
 //Add login
@@ -112,20 +126,29 @@ app.post("/login",(req,res) => {
 
 // Delete URL
 app.post("/urls/:shortURL/delete",(req,res) => {
+  const userid = req.cookies["userid"];
+  if(userid) {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
 
   res.redirect("/urls");
+  }
+  res.status(401).send("permission denied");
 });
 
 //Edit URL
 app.post("/urls/:shortURL/edit",(req,res) => {
+  const userid = req.cookies["userid"];
+  if(userid) {
   const shortURL = req.params.shortURL;
-  const longURL = req.body.longURL;
   
-  urlDatabase[shortURL] = longURL;
-
+  console.log(req.body);
+  const longURL = req.body.longURL;
+  urlDatabase[shortURL].longURL = longURL;
+  console.log(urlDatabase);
   res.redirect("/urls");
+  }
+  res.status(401).send("permission denied");
 });
 
 
@@ -138,17 +161,28 @@ app.get("/urls/new", (req,res) => {
   const template = { user: users[id]};
   res.render("urls_new",template);
   } else {
+    res.status(401);
     res.redirect("/login");
   }
 });
 
 //add new url
 app.post("/urls", (req, res) =>{
+  const userid =req.cookies.userid;
+  if(userid!== undefined){
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
-  urlDatabase[shortURL] = longURL;
   
+  urlDatabase[shortURL] ={};
+  urlDatabase[shortURL].longURL = longURL;
+  urlDatabase[shortURL].userID =userid;
+ // console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
+  } else 
+  {
+    res.status(401).send("permission denied");
+    
+  }
  
 });
 
@@ -156,12 +190,18 @@ app.post("/urls", (req, res) =>{
 
 //display home page
 app.get("/urls",(req,res) =>{
-  const id = req.cookies["userid"];
-  console.log(id);
-  const user = users[id];
-  console.log("here" + user);
-  const templateVars = {urls : urlDatabase,user: user};
+   const userid = req.cookies['userid'];
+   const user = users[userid];
+   if(userid){
+   
+   const databaseURl = filteredUrlDatabase(urlDatabase,userid);
+   console.log(databaseURl);
+   const templateVars = {urls : databaseURl ,user : user};
   res.render("urls_index",templateVars);
+   } else {
+   res.status(401);
+   res.render("urls_index",{urls :null ,user: user});
+   }
 });
 
 
@@ -169,9 +209,10 @@ app.get("/urls",(req,res) =>{
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   if (Object.keys(urlDatabase).includes(shortURL)) {
-    const longURL = urlDatabase[shortURL];
+    const longURL = urlDatabase[shortURL].longURL;
     res.redirect(longURL);
   } else {
+    res.status(404);
     res.render('404');
   }
 });
@@ -181,8 +222,8 @@ app.get("/u/:shortURL", (req, res) => {
 // Read specified ShortURL alomg with its long URL
 app.get("/urls/:shortURL",(req,res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
-  const user = users[req.cookies["userid"]];
+  const longURL = urlDatabase[shortURL].longURL;
+  const user = users[req.cookies['userid']];
 
   if (Object.keys(urlDatabase).includes(shortURL)) {
     const templateVars = { shortURL: shortURL, longURL :longURL ,user: user};
@@ -209,5 +250,8 @@ app.get("/hello",(req,res) => {
 });
 
 app.listen(PORT ,() => {
-  console.log(`App listening on port ${PORT}`);
+  console.log(`App listening on port ${PORT}`)
+  ;
+  
 });
+
