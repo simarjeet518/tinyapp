@@ -1,82 +1,21 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
+const cookieParser = require("cookie-parser");
 const morgan = require('morgan');
 const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080;
-
+const { verifyEmail, filteredUrlDatabase ,badCookie ,generateRandomString ,urlDatabase ,users ,is_url} = require('./helper');
 // middleware
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extented: true}));
+app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
-  keys: ['key1', 'key2']
+  keys: ['make it hard', '123409866312387765']
 }));
 app.set("view engine", "ejs");
-
-//create 6 characters alphaNumaric code for shortURL
-const generateRandomString = function() {
-  return  Math.random().toString(36).slice(7);
-};
-
-const users = {
-  '05fro9': {
-    id: '05fro9',
-    email: 'simarjeet518@gmail.com',
-    password: '$2a$10$lj7yPtDA2xIZPrZOW.98W.JBh3w7Lk6pejxtjj8pW2JjZKxRFReTa'
-  },
-  m4e2dd: {
-    id: 'm4e2dd',
-    email: 'ssd@gmail.com',
-    password: '$2a$10$hE3yydTnjzFQopcBlVcLAOKQw1B4zWQwsWoNKt79Vzef0wFBPk.9m'
-  }
-  
-  
-};
-
-const urlDatabase = {
-  y63znj: { longURL: 'http://www.w3schools.com', userID: '05fro9' },
-  zif49g: {
-    longURL: 'https://github.com/simarjeet518/tinyapp',
-    userID: '05fro9'
-  },
-  i9250c: { longURL: 'https://www.google.com/', userID: 'm4e2dd' },
-  kxo387: { longURL: 'http://www.w3schools.com', userID: 'm4e2dd' }
-};
-
-//helper function to remove cookies not in my database
-const badCookie = (req,res) => {
-  const userIds = Object.keys(users);
-  const cookiee = req.session.userid;
-  if (!userIds.includes(cookiee)) {
-    req.session.userid = "";
-  }
-};
-
-// helper function to get url under logged userid
-const filteredUrlDatabase = (urlDatabase,userid) => {
-  let filteredObject = {};
-  for (let shorturl in urlDatabase) {
-    if (urlDatabase[shorturl].userID === userid) {
-      filteredObject[shorturl] = urlDatabase[shorturl].longURL;
-    }
-  }
-  return filteredObject;
-};
-
-//helper function to match email
-const verifyEmail = (email) => {
-  let result = "";
-  for (let keys in users) {
-    if (email === users[keys]['email']) {
-      result = keys;
-    }
-  }
-  return result;
-  
-};
-
 
 // display register template
 app.get("/register",(req,res) => {
@@ -107,6 +46,7 @@ app.post("/register",(req,res) => {
 
 //logout display
 app.post("/logout",(req,res) => {
+  res.clearCookie('userid');
   req.session.userid = "";
   res.redirect("/login");
 
@@ -170,7 +110,7 @@ app.get("/urls/new", (req,res) => {
   badCookie(req,res);
   const id = req.session.userid;
   if (id !== "") {
-    const template = { user: users[id]};
+    const template = { user: users[id], msg : null};
     res.render("urls_new",template);
   } else {
     res.status(401);
@@ -183,16 +123,21 @@ app.get("/urls/new", (req,res) => {
 //add new url
 app.post("/urls", (req, res) =>{
   badCookie(req,res);
+  
   const userid = req.session.userid;
   if (userid !== undefined) {
+
     const shortURL = generateRandomString();
     const longURL = req.body.longURL;
-  
+    if (is_url(longURL)) {
     urlDatabase[shortURL] = {};
     urlDatabase[shortURL].longURL = longURL;
     urlDatabase[shortURL].userID = userid;
 
     res.redirect(`/urls/${shortURL}`);
+    } else {
+      res.render('urls_new',{user: users[userid], msg : "please enter valid URL"});
+    }
   } else {
     res.status(401).send("permission denied");
     
