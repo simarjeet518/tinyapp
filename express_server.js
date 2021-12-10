@@ -4,12 +4,14 @@ const cookieSession = require('cookie-session');
 const cookieParser = require("cookie-parser");
 const morgan = require('morgan');
 const bcrypt = require('bcryptjs');
+const methodOverride = require('method-override');
 const app = express();
 const PORT = 8080;
-const { getUserByemail, filteredUrlDatabase ,badCookie ,generateRandomString ,isURL, validateData, validateLoginData} = require('./helper');
-const {users ,urlDatabase} = require('./database');
-
+const { getUserByemail, filteredUrlDatabase ,badCookie ,generateRandomString ,isURL, validateData, validateLoginData,urlVisitsCount} = require('./helper');
+const {users ,urlDatabase, visits} = require('./database');
+//urlVisitsCount();
 // middleware
+app.use(methodOverride('_method'));
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extented: true}));
 app.use(cookieParser());
@@ -20,6 +22,7 @@ app.use(cookieSession({
 app.set("view engine", "ejs");
 
 app.get("/",(req,res)=>{
+ 
   return res.render("login",{user:null,error:""});
 });
 // Get and post request for register templates
@@ -59,6 +62,7 @@ app.get("/login",(req,res) => {
 });
 
 app.post("/login",(req,res) => {
+  
   const loginEmail = req.body.email;
   const loginpassword = req.body.password;
   const userid = getUserByemail(loginEmail,users);
@@ -74,7 +78,7 @@ app.post("/login",(req,res) => {
 });
 
 // Delete URL
-app.post("/urls/:shortURL/delete",(req,res) => {
+app.delete("/urls/:shortURL",(req,res) => {
   badCookie(req,res);
   const userid = req.session.userid;
   if (userid) {
@@ -87,19 +91,19 @@ app.post("/urls/:shortURL/delete",(req,res) => {
 });
 
 //Edit URL
-app.post("/urls/:shortURL/edit",(req,res) => {
+app.put("/urls/:shortURL",(req,res) => {
   badCookie(req,res);
   const userid = req.session.userid;
   if (userid) {
     const shortURL = req.params.shortURL;
-  
+    const visitCount = visits[shortURL]
     const longURL = req.body.longURL;
     if (isURL(longURL)) {
       urlDatabase[shortURL].longURL = longURL;
       return res.redirect("/urls");
     
     } else {
-      const templateVars = { shortURL: shortURL, longURL :longURL ,user: users[userid],msg:"please enter a Valid URL"};
+      const templateVars = { shortURL: shortURL, longURL :longURL ,user: users[userid],msg:"please enter a Valid URL", visits: visitCount};
       return res.render("urls_show", templateVars);
     }
   }
@@ -186,15 +190,17 @@ app.get("/u/:shortURL", (req, res) => {
 // Read specified ShortURL alomg with its long URL
 app.get("/urls/:shortURL",(req,res) => {
   badCookie(req,res);
+  urlVisitsCount(req.url);
   const userid = req.session.userid;
   const user = users[userid];
   if (userid) {
     const shortURL = req.params.shortURL;
+    const visitsCount = visits[shortURL];
     const longURL = urlDatabase[shortURL].longURL;
     const user = users[req.session.userid];
 
     if (Object.keys(urlDatabase).includes(shortURL)) {
-      const templateVars = { shortURL: shortURL, longURL :longURL ,user: user , msg:""};
+      const templateVars = { shortURL: shortURL, longURL :longURL ,user: user , msg:"", visits: visitsCount };
       return res.render("urls_show", templateVars);
     }
   }

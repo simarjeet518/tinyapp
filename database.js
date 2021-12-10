@@ -11,6 +11,10 @@ const users = {
   }
   
   
+}; 
+const visits = {
+  y63znj : 0 ,
+  i9250c : 0
 };
 
 const urlDatabase = {
@@ -23,4 +27,4 @@ const urlDatabase = {
   kxo387: { longURL: 'http://www.w3schools.com', userID: 'm4e2dd' }
 };
 
-module.exports ={ users,urlDatabase};
+module.exports ={ users,urlDatabase,visits};
