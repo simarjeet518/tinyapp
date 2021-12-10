@@ -29,6 +29,9 @@
             style="width: 300px; height:40px; border: 20px,solid;margin: 1em">
           <button type="submit" class="btn btn-primary">Submit</button>
         </form>
+        <% if(msg){ %>
+          <div> <h2><%=`${msg}` %></h2> </div>
+          <% } %>
         <%} %>
       </div>
     </div>

@@ -1,41 +1,14 @@
-const users = {
-  '05fro9': {
-    id: '05fro9',
-    email: 'simarjeet518@gmail.com',
-    password: '$2a$10$lj7yPtDA2xIZPrZOW.98W.JBh3w7Lk6pejxtjj8pW2JjZKxRFReTa'
-  },
-  m4e2dd: {
-    id: 'm4e2dd',
-    email: 'ssd@gmail.com',
-    password: '$2a$10$hE3yydTnjzFQopcBlVcLAOKQw1B4zWQwsWoNKt79Vzef0wFBPk.9m'
-  }
-  
-  
-};
+const bcrypt = require('bcryptjs');
+const {users} = require('./database');
 
-const urlDatabase = {
-  y63znj: { longURL: 'http://www.w3schools.com', userID: '05fro9' },
-  zif49g: {
-    longURL: 'https://github.com/simarjeet518/tinyapp',
-    userID: '05fro9'
-  },
-  i9250c: { longURL: 'https://www.google.com/', userID: 'm4e2dd' },
-  kxo387: { longURL: 'http://www.w3schools.com', userID: 'm4e2dd' }
-};
-
+//generates 6 digits of string for useris and short url
 const generateRandomString = function() {
   return  Math.random().toString(36).slice(7);
 };
 
 
-function is_url(str)
-{
-  regexp =  /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/;
-        return str.match(regexp);
-};
 
-
-//helper function to remove cookies not in my database
+//helper function to remove cookies not stored in my database, if restarts server then clears userid cookies  in browser if not from databse
 const badCookie = (req,res) => {
   const userIds = Object.keys(users);
   const cookiee = req.session.userid;
@@ -44,7 +17,7 @@ const badCookie = (req,res) => {
   }
 };
 
-
+// filter urldatabase return only urls belongs to userid
 const filteredUrlDatabase = (urlDatabase,userid) => {
   let filteredObject = {};
   for (let shorturl in urlDatabase) {
@@ -55,16 +28,45 @@ const filteredUrlDatabase = (urlDatabase,userid) => {
   return filteredObject;
 };
 
-//helper function to match email
-const verifyEmail = (email) => {
+//check if email in database return userid else return empty string
+const getUserByemail = (email,users) => {
   let result = "";
-  for (let keys in users) {
-    if (email === users[keys]['email']) {
-      result = keys;
+  for (let userid in users) {
+    if (email === users[userid]['email']) {
+      result = userid;
     }
   }
   return result;
   
 };
+// validate data on registration
+const  validateData = (email,password) => {
+  let err = "";
+  if (email === "" || password === "")  {
+    err = "Error : Email and password should not be empty";
+    return err;
+  }
+  if (getUserByemail(email,users) !== "") {
+    err = "Error : Email already exists in data ";
+    return err;
+  }
+  return err;
+};
+//function to check login crendientials
+const validateLoginData = (userid,loginpassword) =>{
+  let err = "";
+  if (userid !== "" && bcrypt.compareSync(loginpassword,users[userid]['password'])) {
+    return err;
+  } else {
+    err = "Error :email id and password does not match";
+    return err;
+  }
+};
 
-module.exports = { verifyEmail, filteredUrlDatabase ,badCookie ,generateRandomString ,urlDatabase ,users ,is_url}
+// helper function to check valid url or not
+const isURL = (str) =>{
+  const regexp =  /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/;
+  return str.match(regexp);
+};
+
+module.exports = { getUserByemail, filteredUrlDatabase ,badCookie ,generateRandomString ,isURL ,validateData,validateLoginData};

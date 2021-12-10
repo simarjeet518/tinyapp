@@ -14,28 +14,36 @@
 
 <body>
   <%- include('partials/_header') %>
-    <div>
-      <form method="POST" action="/login" style="margin-left:20px">
-        <h2 style="font-weight: 200; font-family:Arial, Helvetica, sans-serif; margin-bottom: 15px;margin-left:80px">
-          Login</h2>
-        <p>Not registered yet?<a href="/register">click Here</a></p>
+    <% if(error) %>
+      <div>
+        <h4>
+          <%=`${error}` %>
+            <h4>
+      </div>
+      <% %>
         <div>
-          <label for="email" style="margin-bottom: 0px;"><b>Email address <address></address></b></label><br>
-          <input " type=" email" name="email" placeholder="Enter email"
-            style="width: 300px; height:40px; border-radius: 5px;margin-top: 0px;"><br>
-        </div>
-        <div>
-          <label for="password" style="margin-top: 15px;"><b>Password</b></label><br />
-          <input " type="password" name="password" placeholder="password"
-            style="width: 300px;  height:40px; border-radius: 5px;margin-top: 6px;"><br><br />
+          <form method="POST" action="/login" style="margin-left:20px">
+            <h2
+              style="font-weight: 200; font-family:Arial, Helvetica, sans-serif; margin-bottom: 15px;margin-left:80px">
+              Login</h2>
+            <p>Not registered yet?<a href="/register">click Here</a></p>
+            <div>
+              <label for="email" style="margin-bottom: 0px;"><b>Email address <address></address></b></label><br>
+              <input " type=" email" name="email" placeholder="Enter email"
+                style="width: 300px; height:40px; border-radius: 5px;margin-top: 0px;"><br>
+            </div>
+            <div>
+              <label for="password" style="margin-top: 15px;"><b>Password</b></label><br />
+              <input " type="password" name="password" placeholder="password"
+                style="width: 300px;  height:40px; border-radius: 5px;margin-top: 6px;"><br><br />
 
-        </div>
-        <div>
-          <button class="btn btn-primary" type="submit" class="btn " style="margin-left:80px">Login</button>
-        </div>
+            </div>
+            <div>
+              <button class="btn btn-primary" type="submit" class="btn " style="margin-left:80px">Login</button>
+            </div>
 
-      </form>
-    </div>
+          </form>
+        </div>
 </body>
 
 </html>
