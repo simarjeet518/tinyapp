@@ -63,18 +63,33 @@ const validateLoginData = (userid,loginpassword) =>{
   }
 };
 
-const urlVisitsCount =(url)=>{
+const urlVisitsCount =(req)=>{
+  let url = req.url;
+  const time= (req._startTime).toString();
+  let arr = time.split("G");
+  let timeStamp = arr[0];
+  let userid = req.session.userid; 
    for(let shorturl in urlDatabase){
      if(!Object.keys(visits).includes(shorturl)){
-      visits[shorturl] = 0;
+     
+      visits[shorturl]={}
+      visits[shorturl].visitors ={};
+      visits[shorturl].visitors[userid] ={};
+      visits[shorturl].count = 0;
+      
      }
     }
     for(let shorturl in urlDatabase){
      if(url.includes(shorturl)){
-     visits[shorturl] = Number(visits[shorturl])+ 1;
-     }
+      
+     visits[shorturl].count = visits[shorturl].count +1;
+     visits[shorturl].visitors[userid]['times'] = timeStamp;
+     visits[shorturl].visitors[userid]['count'] = +1;
+    
+      }
     }
     console.log(visits);
+    
     return;
 
 }

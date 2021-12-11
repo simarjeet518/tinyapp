@@ -13,8 +13,7 @@ const users = {
   
 }; 
 const visits = {
-  y63znj : 0 ,
-  i9250c : 0
+ 
 };
 
 const urlDatabase = {

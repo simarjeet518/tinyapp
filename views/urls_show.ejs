@@ -23,7 +23,7 @@
         <h3>
           <% if(user !==undefined) {%> <b>Edit</b>
         </h3>
-        <p>This shortURL is visited <%=visits %>  times</p>
+        
         <form method="POST" action="/urls/<%=shortURL%>?_method=PUT">
           <label for="longURL" style="font-weight: bold;"> New URL</label>
           <input " type=" text" name="longURL" value="<%= longURL %>"
@@ -34,7 +34,14 @@
           <div> <h2><%=`${msg}` %></h2> </div>
           <% } %>
         <%} %>
-      </div>
+      </div> <h3> Analytics </h3>
+      <% if(!visitCount){ %>
+        <p>No visitors data available for this URL</p>
+        <% } else {%>
+      <p>Total Visits :<%=visitCount%> and Unique Visitors : <%=unique%></p> 
+      <% for(let key in visitors){%>
+      <div> user <b><%=key%> </b>&nbsp;&nbsp;<b> Last Visit Time :- </b> <%=visitors[key].times%>&nbsp;&nbsp; <b> Total Visits :</b> <%=visitors[key].count%> </div>
+      <% } }%>
     </div>
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

@@ -94,16 +94,25 @@ app.delete("/urls/:shortURL",(req,res) => {
 app.put("/urls/:shortURL",(req,res) => {
   badCookie(req,res);
   const userid = req.session.userid;
+  let visitCount,visitors,uniqueVisitors;
   if (userid) {
     const shortURL = req.params.shortURL;
-    const visitCount = visits[shortURL]
     const longURL = req.body.longURL;
+    if(Object.keys(visits).includes(shortURL)){
+      visitCount = visits[shortURL]['count'];
+      visitors = visits[shortURL].visitors;
+      uniqueVisitors = Object.keys(visits[shortURL].visitors).length
+     } else {
+        visitCount = 0
+        visitors = 0;
+        uniqueVisitors =0;
+     }
     if (isURL(longURL)) {
       urlDatabase[shortURL].longURL = longURL;
       return res.redirect("/urls");
     
     } else {
-      const templateVars = { shortURL: shortURL, longURL :longURL ,user: users[userid],msg:"please enter a Valid URL", visits: visitCount};
+      const templateVars = { shortURL: shortURL, longURL :longURL ,user: users[userid],msg:"please enter a Valid URL", visitCount: visitCount,visitors : visitors ,unique: uniqueVisitors};
       return res.render("urls_show", templateVars);
     }
   }
@@ -175,6 +184,7 @@ app.get("/urls",(req,res) =>{
 // display longURL from shortURL
 app.get("/u/:shortURL", (req, res) => {
   badCookie(req,res);
+  urlVisitsCount(req);
   const shortURL = req.params.shortURL;
   if (Object.keys(urlDatabase).includes(shortURL)) {
     const longURL = urlDatabase[shortURL].longURL;
@@ -190,17 +200,28 @@ app.get("/u/:shortURL", (req, res) => {
 // Read specified ShortURL alomg with its long URL
 app.get("/urls/:shortURL",(req,res) => {
   badCookie(req,res);
-  urlVisitsCount(req.url);
+  
   const userid = req.session.userid;
   const user = users[userid];
+  let visitCount ,visitors,uniqueVisitors;
   if (userid) {
     const shortURL = req.params.shortURL;
-    const visitsCount = visits[shortURL];
+    
     const longURL = urlDatabase[shortURL].longURL;
     const user = users[req.session.userid];
+    if(Object.keys(visits).includes(shortURL)){
+     visitCount = visits[shortURL]['count'];
+     visitors = visits[shortURL].visitors;
+     uniqueVisitors = Object.keys(visits[shortURL].visitors).length
+    } else {
+       visitCount = 0
+       visitors = 0;
+       uniqueVisitors =0;
+    }
+    console.log(visitors);
 
     if (Object.keys(urlDatabase).includes(shortURL)) {
-      const templateVars = { shortURL: shortURL, longURL :longURL ,user: user , msg:"", visits: visitsCount };
+      const templateVars = { shortURL: shortURL, longURL :longURL ,user: user , msg:"", visitCount: visitCount, visitors : visitors ,unique : uniqueVisitors};
       return res.render("urls_show", templateVars);
     }
   }
