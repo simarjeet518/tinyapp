@@ -63,36 +63,60 @@ const validateLoginData = (userid,loginpassword) =>{
   }
 };
 
-const urlVisitsCount =(req)=>{
+// function to store visitors information in visits database
+const urlVisitsCount = (req,shorturl,userid)=>{
   let url = req.url;
-  const time= (req._startTime).toString();
-  let arr = time.split("G");
+  const time = (req._startTime).toString();
+  let arr = time.split("G");  //only date and time extracted from time object
   let timeStamp = arr[0];
-  let userid = req.session.userid; 
-   for(let shorturl in urlDatabase){
-     if(!Object.keys(visits).includes(shorturl)){
+   
+  //           //structure of data defined (nested objects)
+  if (!Object.keys(visits).includes(shorturl)) {
      
-      visits[shorturl]={}
-      visits[shorturl].visitors ={};
-      visits[shorturl].visitors[userid] ={};
-      visits[shorturl].count = 0;
+    visits[shorturl] = {};
+    visits[shorturl].visitors = {};
+    visits[shorturl].visitors[userid] = {};
+    visits[shorturl].visitors[userid].times = "";
+    visits[shorturl].visitors[userid].count = 0;
+    visits[shorturl].count = 0;
       
-     }
-    }
-    for(let shorturl in urlDatabase){
-     if(url.includes(shorturl)){
-      
-     visits[shorturl].count = visits[shorturl].count +1;
-     visits[shorturl].visitors[userid]['times'] = timeStamp;
-     visits[shorturl].visitors[userid]['count'] = +1;
+  }
     
-      }
-    }
-    console.log(visits);
+  //data stored for each vistors as times,total uniques vistor ,or known visitors
+  if (!Object.keys(visits[shorturl].visitors).includes(userid)) {
+    visits[shorturl].visitors[userid] = {};
+    visits[shorturl].visitors[userid].times = "";
+    visits[shorturl].visitors[userid].count = 0;
+     
+  }
+  if (url.includes(shorturl)) {
+    visits[shorturl].count += 1;
+    visits[shorturl].visitors[userid].times = timeStamp;
+    visits[shorturl].visitors[userid].count += 1;
     
-    return;
+  }
+    
+  return;
 
-}
+};
+//helper function to send data from visits to url_shows page
+const fetchvisits = (shortURL) => {
+  let visitCount,visitors,uniqueVisitors;
+  let result = [];
+  if (Object.keys(visits).includes(shortURL)) {
+    visitCount = visits[shortURL]['count'];
+    visitors = visits[shortURL].visitors;
+    uniqueVisitors = Object.keys(visits[shortURL].visitors).length;
+  } else {
+    visitCount = 0;
+    visitors = 0;
+    uniqueVisitors = 0;
+  }
+  result.push(visitCount);
+  result.push(visitors);
+  result.push(uniqueVisitors);
+  return result;
+};
 
 // helper function to check valid url or not
 const isURL = (str) =>{
@@ -100,4 +124,4 @@ const isURL = (str) =>{
   return str.match(regexp);
 };
 
-module.exports = { getUserByemail, filteredUrlDatabase ,badCookie ,generateRandomString ,isURL ,validateData,validateLoginData,urlVisitsCount};
+module.exports = { getUserByemail, filteredUrlDatabase ,badCookie ,generateRandomString ,isURL ,validateData,validateLoginData,urlVisitsCount,fetchvisits};

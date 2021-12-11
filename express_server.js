@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs');
 const methodOverride = require('method-override');
 const app = express();
 const PORT = 8080;
-const { getUserByemail, filteredUrlDatabase ,badCookie ,generateRandomString ,isURL, validateData, validateLoginData,urlVisitsCount} = require('./helper');
+const { getUserByemail, filteredUrlDatabase ,badCookie ,generateRandomString ,isURL, validateData, validateLoginData,urlVisitsCount,fetchvisits} = require('./helper');
 const {users ,urlDatabase, visits} = require('./database');
 //urlVisitsCount();
 // middleware
@@ -94,19 +94,14 @@ app.delete("/urls/:shortURL",(req,res) => {
 app.put("/urls/:shortURL",(req,res) => {
   badCookie(req,res);
   const userid = req.session.userid;
-  let visitCount,visitors,uniqueVisitors;
+ 
   if (userid) {
     const shortURL = req.params.shortURL;
     const longURL = req.body.longURL;
-    if(Object.keys(visits).includes(shortURL)){
-      visitCount = visits[shortURL]['count'];
-      visitors = visits[shortURL].visitors;
-      uniqueVisitors = Object.keys(visits[shortURL].visitors).length
-     } else {
-        visitCount = 0
-        visitors = 0;
-        uniqueVisitors =0;
-     }
+    const arr = fetchvisits(shortURL);
+    const visitCount = arr[0];
+    const visitors = arr[1];
+    const uniqueVisitors = arr[2];
     if (isURL(longURL)) {
       urlDatabase[shortURL].longURL = longURL;
       return res.redirect("/urls");
@@ -184,8 +179,14 @@ app.get("/urls",(req,res) =>{
 // display longURL from shortURL
 app.get("/u/:shortURL", (req, res) => {
   badCookie(req,res);
-  urlVisitsCount(req);
+  // this id is used to get visitors data,if no userid as no one logged in,no cookie in data then  user name will be random(no-cookie)
+  let id = "Random(no-cookie)";
+  if (req.session.userid) {
+    id = req.session.userid;
+  }
+  
   const shortURL = req.params.shortURL;
+  urlVisitsCount(req,shortURL,id);
   if (Object.keys(urlDatabase).includes(shortURL)) {
     const longURL = urlDatabase[shortURL].longURL;
     return res.redirect(longURL);
@@ -203,22 +204,16 @@ app.get("/urls/:shortURL",(req,res) => {
   
   const userid = req.session.userid;
   const user = users[userid];
-  let visitCount ,visitors,uniqueVisitors;
+  
   if (userid) {
     const shortURL = req.params.shortURL;
     
     const longURL = urlDatabase[shortURL].longURL;
     const user = users[req.session.userid];
-    if(Object.keys(visits).includes(shortURL)){
-     visitCount = visits[shortURL]['count'];
-     visitors = visits[shortURL].visitors;
-     uniqueVisitors = Object.keys(visits[shortURL].visitors).length
-    } else {
-       visitCount = 0
-       visitors = 0;
-       uniqueVisitors =0;
-    }
-    console.log(visitors);
+    const arr = fetchvisits(shortURL);   // data fetched from helper functions for visitors[count,vistors info , unique visits]
+    const visitCount = arr[0];
+    const visitors = arr[1];
+    const uniqueVisitors = arr[2];
 
     if (Object.keys(urlDatabase).includes(shortURL)) {
       const templateVars = { shortURL: shortURL, longURL :longURL ,user: user , msg:"", visitCount: visitCount, visitors : visitors ,unique : uniqueVisitors};
