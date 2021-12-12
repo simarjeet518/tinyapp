@@ -70,7 +70,7 @@ const urlVisitsCount = (req,shorturl,userid)=>{
   let arr = time.split("G");  //only date and time extracted from time object
   let timeStamp = arr[0];
    
-  //           //structure of data defined (nested objects)
+   //structure of data defined (nested objects)
   if (!Object.keys(visits).includes(shorturl)) {
      
     visits[shorturl] = {};
