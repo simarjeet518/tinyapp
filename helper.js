@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const {users,visits, urlDatabase} = require('./database');
+const {users,visits} = require('./database');
 
 //generates 6 digits of string for useris and short url
 const generateRandomString = function() {
@@ -9,7 +9,7 @@ const generateRandomString = function() {
 
 
 //helper function to remove cookies not stored in my database, if restarts server then clears userid cookies  in browser if not from databse
-const badCookie = (req,res) => {
+const badCookie = (req) => {
   const userIds = Object.keys(users);
   const cookiee = req.session.userid;
   if (!userIds.includes(cookiee)) {
@@ -70,7 +70,7 @@ const urlVisitsCount = (req,shorturl,userid)=>{
   let arr = time.split("G");  //only date and time extracted from time object
   let timeStamp = arr[0];
    
-   //structure of data defined (nested objects)
+  //structure of data defined (nested objects)
   if (!Object.keys(visits).includes(shorturl)) {
      
     visits[shorturl] = {};
