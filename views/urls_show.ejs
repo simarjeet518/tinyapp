@@ -13,11 +13,8 @@
         <div class="card text-center">
             <div class="card-header"></div>
             <div class="card-body">
-                <h5 class="card-title">TinyURL for: <%= longURL %>
-                </h5>
-                <p class="card-text">Short URL: <a href="<%= `/u/${shortURL}` %>">
-                        <%= shortURL %>
-                    </a></p>
+                <h5 class="card-title">TinyURL for: <%= longURL %> </h5>
+                <p class="card-text">Short URL: <a href="<%= `/u/${shortURL}` %>">  <%= shortURL %></a></p>
             </div>
             <div class="card-footer text-muted">
                 <h3>
@@ -44,7 +41,7 @@
                 <p>No visitors data available for this URL</p>
                 <% } else {%>
                     <p>Total Visits :<%=visitCount%> and Unique Visitors : <%=unique%> </p>
-                    <% for(let key in visitors){%>
+                      <% for(let key in visitors){%>
                         <div> user <b> <%=key%> </b>&nbsp;&nbsp;<b> Last Visit Time :- </b>
                             <%=visitors[key].times%>&nbsp;&nbsp; <b> Total Visits :</b><%=visitors[key].count%>
                         </div>
