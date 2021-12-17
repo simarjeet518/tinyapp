@@ -11,9 +11,12 @@ const generateRandomString = function() {
 //helper function to remove cookies not stored in my database, if restarts server then clears userid cookies  in browser if not from databse
 const badCookie = (req) => {
   const userIds = Object.keys(users);
-  const cookiee = req.session.userid;
-  if (!userIds.includes(cookiee)) {
-    req.session.userid = "";
+  if (req.session) {
+    const cookiee = req.session.userid;
+    if (!userIds.includes(cookiee)) {
+      req.session = null;
+   
+    }
   }
 };
 

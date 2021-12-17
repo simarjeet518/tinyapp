@@ -54,7 +54,7 @@ app.post("/register",(req,res) => {
 
 //logout request
 app.post("/logout",(req,res) => {
-  req.session.userid = "";
+  req.session = null;
   return  res.redirect("/login");
 });
 
@@ -83,6 +83,10 @@ app.post("/login",(req,res) => {
 // Delete URL
 app.delete("/urls/:shortURL",(req,res) => {
   badCookie(req);
+  if (req.session === null) {
+    res.status(404);
+    return res.render("login",{user:null,error:"please login first"});
+  }
   const userid = req.session.userid;
   if (userid) {
     const shortURL = req.params.shortURL;
@@ -97,7 +101,12 @@ app.delete("/urls/:shortURL",(req,res) => {
 //Edit URL
 app.put("/urls/:shortURL",(req,res) => {
   badCookie(req);
+  if (req.session === null) {
+    res.status(404);
+    return res.render("login",{user:null,error:"please login first"});
+  }
   const userid = req.session.userid;
+
   if (userid) {
     const shortURL = req.params.shortURL;
     const longURL = req.body.longURL;
@@ -123,8 +132,12 @@ app.put("/urls/:shortURL",(req,res) => {
 // display page where new longURL added
 app.get("/urls/new", (req,res) => {
   badCookie(req);
+  if (req.session === null) {
+    res.status(401);
+    return res.render("login",{user:null,error:"please login first"});
+  }
   const id = req.session.userid;
-  if (id !== "") {
+  if (id !== "" || id !== null) {
     const template = { user: users[id], msg : null};
     return  res.render("urls_new",template);
   }
@@ -137,8 +150,13 @@ app.get("/urls/new", (req,res) => {
 //add new url
 app.post("/urls", (req, res) =>{
   badCookie(req);
+  if (req.session === null) {
+    res.status(401);
+    return res.render("login",{user:null,error:"please login first"});
+  }
   const userid = req.session.userid;
-  if (userid !== undefined) {
+
+  if (userid !== undefined || userid !== null) {
     const shortURL = generateRandomString();
     const longURL = req.body.longURL;
     if (isURL(longURL)) {
@@ -158,6 +176,10 @@ app.post("/urls", (req, res) =>{
 //display home page
 app.get("/urls",(req,res) =>{
   badCookie(req);
+  if (req.session === null) {
+    res.status(401);
+    return res.render("login",{user:null,error:"please login first"});
+  }
   const userid = req.session.userid;
   const user = users[userid];
   if (userid) {
@@ -175,7 +197,7 @@ app.get("/urls",(req,res) =>{
 app.get("/u/:shortURL", (req, res) => {
   badCookie(req);
   let id = "Random(no-cookie)";  // this id is used to get visitors data,if no userid as no one logged in,no cookie in data then  user name will be random(no-cookie)
-  if (req.session.userid) {
+  if (req.session) {
     id = req.session.userid;
   }
   const shortURL = req.params.shortURL;
@@ -193,10 +215,15 @@ app.get("/u/:shortURL", (req, res) => {
 // Read specified ShortURL alomg with its long URL
 app.get("/urls/:shortURL",(req,res) => {
   badCookie(req);
-
+  const shortURL = req.params.shortURL;
+  if (req.session === null) {
+    res.status(401);
+    return res.render("login",{user:null,error:"please login first"});
+  }
   const userid = req.session.userid;
   const user = users[userid];
-  if (userid) {
+  const approval = urlDatabase[shortURL].userID === userid;
+  if (approval) {
     const shortURL = req.params.shortURL;
     const longURL = urlDatabase[shortURL].longURL;
     const user = users[req.session.userid];
