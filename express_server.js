@@ -1,7 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
-const cookieParser = require("cookie-parser");
 const morgan = require('morgan');
 const bcrypt = require('bcryptjs');
 const methodOverride = require('method-override');
@@ -14,7 +13,6 @@ const {users ,urlDatabase} = require('./database');
 app.use(methodOverride('_method'));
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extented: true}));
-app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['make it hard', '123409866312387765']
